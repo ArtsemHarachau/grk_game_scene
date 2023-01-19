@@ -5,11 +5,13 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include "Render_Utils.h"
 
 class Laser
 {
 
 private:
+	Core::RenderContext laserContext;
 	glm::vec3 laserDir;
 	glm::vec3 laserPos;
 	float timeSinceShootLaser;
@@ -33,6 +35,9 @@ public:
 
 	void setTimeSinceShootLaser(float tSinceShootLaser);
 	float getTimeSinceShootLaser();
+
+	void setLaserContext(Core::RenderContext lasContext);
+	Core::RenderContext getLaserContext();
 
 };
 

@@ -82,11 +82,17 @@ float spotlightPhi = 3.14 / 4;
 bool drawLaserShot = false;
 
 
+double startCursorXPos;
+double startCursorYPos;
+
+
 float lastTime = -1.f;
 float deltaTime = 0.f;
 
 Laser laser = Laser();
-SpaceShip spaceShip = SpaceShip();
+SpaceShip spaceShip = SpaceShip(20);
+
+std::vector<Core::RenderContext> lasersContexts;
 
 void updateDeltaTime(float time) {
 	if (lastTime < 0) {
@@ -166,7 +172,57 @@ void drawObjectPBR(Core::RenderContext& context, glm::mat4 modelMatrix, glm::vec
 }
 
 
-void drawLaser() {
+//void drawLaser() {
+//
+//	float time = glfwGetTime();
+//
+//	glm::vec3 laserSide = glm::normalize(glm::cross(laser.getLaserDir(), glm::vec3(0.f, 1.f, 0.f)));
+//	glm::vec3 laserUp = glm::normalize(glm::cross(laserSide, laser.getLaserDir()));
+//	glm::mat4 laserCameraRotrationMatrix = glm::mat4({
+//		laserSide.x, laserSide.y, laserSide.z,0,
+//		laserUp.x, laserUp.y, laserUp.z ,0,
+//		-laser.getLaserDir().x,-laser.getLaserDir().y,-laser.getLaserDir().z,0,
+//		0.,0.,0.,1.,
+//		});
+//	float t = time - laser.getTimeSinceShootLaser();
+//
+//	
+//	glm::vec3 newLaserPos = laser.getLaserPos() + laser.getLaserDir() * (laser.getLaserSpeed() * (t + sin(0.2 * t)));
+//	laser.setLaserPos(newLaserPos);
+//
+//
+//	drawObjectPBR(models::laserContext, 
+//		glm::translate(laser.getLaserPos()) * laserCameraRotrationMatrix * glm::eulerAngleY(glm::pi<float>()) * glm::scale(glm::vec3(0.03f)), 
+//		glm::vec3(1.0f, 0.f, 0.f), 0.f, 0.f);
+//}
+
+
+void drawSpaceLaser() {
+
+	float time = glfwGetTime();
+
+	glm::vec3 laserSide = glm::normalize(glm::cross(spaceShip.getGun()[spaceShip.getNumberOfLeftLasers() - 1].getLaserDir(), glm::vec3(0.f, 1.f, 0.f)));
+	glm::vec3 laserUp = glm::normalize(glm::cross(laserSide, spaceShip.getGun()[spaceShip.getNumberOfLeftLasers() - 1].getLaserDir()));
+	glm::mat4 laserCameraRotrationMatrix = glm::mat4({
+		laserSide.x, laserSide.y, laserSide.z,0,
+		laserUp.x, laserUp.y, laserUp.z ,0,
+		-spaceShip.getGun()[spaceShip.getNumberOfLeftLasers() - 1].getLaserDir().x,-spaceShip.getGun()[spaceShip.getNumberOfLeftLasers() - 1].getLaserDir().y,-spaceShip.getGun()[spaceShip.getNumberOfLeftLasers() - 1].getLaserDir().z,0,
+		0.,0.,0.,1.,
+		});
+	float t = time - spaceShip.getGun()[spaceShip.getNumberOfLeftLasers() - 1].getTimeSinceShootLaser();
+
+	
+	glm::vec3 newLaserPos = spaceShip.getGun()[spaceShip.getNumberOfLeftLasers() - 1].getLaserPos() + spaceShip.getGun()[spaceShip.getNumberOfLeftLasers() - 1].getLaserDir() * (spaceShip.getGun()[spaceShip.getNumberOfLeftLasers() - 1].getLaserSpeed() * (t + sin(0.2 * t)));
+	spaceShip.getGun()[spaceShip.getNumberOfLeftLasers() - 1].setLaserPos(newLaserPos);
+
+
+	drawObjectPBR(models::laserContext,
+		glm::translate(spaceShip.getGun()[spaceShip.getNumberOfLeftLasers() - 1].getLaserPos()) * laserCameraRotrationMatrix * glm::eulerAngleY(glm::pi<float>()) * glm::scale(glm::vec3(0.03f)),
+		glm::vec3(1.0f, 0.f, 0.f), 0.f, 0.f);
+}
+
+
+void drawLaser(Laser laser, int index) {
 
 	float time = glfwGetTime();
 
@@ -180,15 +236,16 @@ void drawLaser() {
 		});
 	float t = time - laser.getTimeSinceShootLaser();
 
-	
+
 	glm::vec3 newLaserPos = laser.getLaserPos() + laser.getLaserDir() * (laser.getLaserSpeed() * (t + sin(0.2 * t)));
 	laser.setLaserPos(newLaserPos);
 
 
-	drawObjectPBR(models::laserContext, 
-		glm::translate(laser.getLaserPos()) * laserCameraRotrationMatrix * glm::eulerAngleY(glm::pi<float>()) * glm::scale(glm::vec3(0.03f)), 
+	drawObjectPBR(lasersContexts[index],
+		glm::translate(laser.getLaserPos()) * laserCameraRotrationMatrix * glm::eulerAngleY(glm::pi<float>()) * glm::scale(glm::vec3(0.03f)),
 		glm::vec3(1.0f, 0.f, 0.f), 0.f, 0.f);
 }
+
 
 void renderShadowapSun() {
 	float time = glfwGetTime();
@@ -274,8 +331,35 @@ void renderScene(GLFWwindow* window)
 	//glBindTexture(GL_TEXTURE_2D, depthMap);
 	//Core::DrawContext(models::testContext);
 
-	if (drawLaserShot) {
-		drawLaser();
+	/*if (drawLaserShot) {
+		drawSpaceLaser();
+	}*/
+
+	if (spaceShip.getAttackDecision()) {
+		//spaceShip.setNumberOfLeftLasers(spaceShip.getNumberOfLeftLasers() - 1);
+		std::cout << "New number of left lasers: " << spaceShip.getNumberOfLeftLasers() << "\n";
+		//drawLaser(spaceShip.getGun()[spaceShip.getNumberOfLeftLasers() - 1], 0);
+		if (spaceShip.getNumberOfLeftLasers() > 0) {
+			int index = spaceShip.getNumberOfLeftLasers() - 1;
+			for (int i = index; i > 0; i--) {
+				drawLaser(spaceShip.getGun()[i], i);
+				spaceShip.setNumberOfLeftLasers(index);
+				std::cout << lasersContexts[i].size << "\n";
+
+				/*if (i == 1) {
+					spaceShip.setAttackDecision(false);
+				}*/
+			}
+		}
+
+		/*for (int i = spaceShip.getNumberOfLeftLasers() - 1; i > 0; i--) {
+			drawLaser(spaceShip.getGun()[i], i);
+
+			if (i == 1) {
+				spaceShip.setAttackDecision(false);
+			}
+		}*/
+		//spaceShip.setAttackDecision(false);
 	}
 
 	glUseProgram(0);
@@ -301,9 +385,40 @@ void loadModelToContext(std::string path, Core::RenderContext& context)
 	context.initFromAssimpMesh(scene->mMeshes[0]);
 }
 
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
+{
+	std::cout << "yStart: " << startCursorYPos << "\n";
+
+	float angleSpeed = 0.05f * deltaTime * 60;
+
+	if (ypos < startCursorYPos) {
+		startCursorYPos = ypos;
+		spaceShip.setSpaceShipDir(glm::vec3(glm::eulerAngleX(angleSpeed) * glm::vec4(spaceShip.getSpaceShipDir(), 0)));
+		//startCursorYPos = ypos;
+		std::cout << "yNew: " << ypos << "\n";
+	}
+	else if (ypos > startCursorYPos) {
+		startCursorYPos = ypos;
+		spaceShip.setSpaceShipDir(glm::vec3(glm::eulerAngleX(-angleSpeed) * glm::vec4(spaceShip.getSpaceShipDir(), 0)));
+		//startCursorYPos = ypos;
+		std::cout << "yNew: " << ypos << "\n";
+	}
+
+
+	//spaceShip.setSpaceShipDir(glm::vec3(glm::eulerAngleZ(angleSpeed) * glm::vec4(spaceShip.getSpaceShipDir(), 0)));
+
+
+}
+
 void init(GLFWwindow* window)
 {
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+
+	glfwGetCursorPos(window, &startCursorXPos, &startCursorYPos);
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+	glfwSetCursorPosCallback(window, cursor_position_callback);
 
 	glEnable(GL_DEPTH_TEST);
 	program = shaderLoader.CreateProgram("shaders/shader_9_1.vert", "shaders/shader_9_1.frag");
@@ -331,7 +446,22 @@ void init(GLFWwindow* window)
 	loadModelToContext("./models/window.obj", models::windowContext);
 	loadModelToContext("./models/test.obj", models::testContext);
 
-	loadModelToContext("./models/newlaser2.obj", models::laserContext);
+	//loadModelToContext("./models/newlaser2.obj", models::laserContext);
+
+
+	lasersContexts.reserve(spaceShip.getMaxNumberOfLasers());
+
+	for (int i = 0; i < spaceShip.getMaxNumberOfLasers(); i++) {
+		lasersContexts.push_back(models::laserContext);
+		loadModelToContext("./models/newlaser2.obj", lasersContexts[i]);
+
+	}
+
+
+	for (int i = 0; i < spaceShip.getMaxNumberOfLasers(); i++) {
+
+		loadModelToContext("./models/newlaser2.obj", spaceShip.getGun()[i].getLaserContext());
+	}
 
 }
 
@@ -340,9 +470,14 @@ void shutdown(GLFWwindow* window)
 	shaderLoader.DeleteProgram(program);
 }
 
+
+
 //obsluga wejscia
 void processInput(GLFWwindow* window)
 {
+
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
 	glm::vec3 spaceshipSide = glm::normalize(glm::cross(spaceShip.getSpaceShipDir(), glm::vec3(0.f,1.f,0.f)));
 	glm::vec3 spaceshipUp = glm::vec3(0.f, 1.f, 0.f);
 	float angleSpeed = 0.05f * deltaTime * 60;
@@ -414,12 +549,15 @@ void processInput(GLFWwindow* window)
 		drawLaserShot = true;
 		
 		spaceShip.setAttackDecision(true);
+		spaceShip.laserPreparationBeforeShoot(glfwGetTime());
 
-		laser.setTimeSinceShootLaser(glfwGetTime());
-		laser.setLaserDir(spaceShip.getSpaceShipDir());
-		laser.setLaserPos(spaceShip.getSpaceShipPos());
-		laser.setLaserSpeed(0.001);
+		//laser.setTimeSinceShootLaser(glfwGetTime());
+		//laser.setLaserDir(spaceShip.getSpaceShipDir());
+		//laser.setLaserPos(spaceShip.getSpaceShipPos());
+		//laser.setLaserSpeed(0.01);
 	}
+
+	//if(glfwGetKey(window, GLFW_MOUSE))
 
 	//cameraDir = glm::normalize(-cameraPos);
 

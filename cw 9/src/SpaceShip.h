@@ -5,20 +5,28 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <iostream>
+#include <vector>
+#include "Laser.h"
 
 class SpaceShip
 {
 private:
 	bool attackDecision = false;
-	glm::vec3 spaceShipDir = glm::vec3(-0.490263f, 0.000000f, 0.871578f);
-	glm::vec3 spaceShipPos = glm::vec3(0.065808f, 1.250000f, -2.189549f);
+	glm::vec3 spaceShipDir;
+	glm::vec3 spaceShipPos;
+	
+	std::vector<Laser> gun;
+	int maxNumberOfLasers;
+	int numberOfLeftLasers;
 
 
 public:
 	SpaceShip();
-	SpaceShip(bool attackDec);
+	SpaceShip(int numberOfLasers);
 
 
+	//getters and setters
 	void setAttackDecision(bool attackDec);
 	bool getAttackDecision();
 
@@ -27,5 +35,18 @@ public:
 
 	void setSpaceShipPos(glm::vec3 spShipPos);
 	glm::vec3 getSpaceShipPos();
+
+	void setGun(std::vector<Laser> g);
+	std::vector<Laser> getGun();
+
+	void setMaxNumberOfLasers(int numberOfLasers);
+	int getMaxNumberOfLasers();
+
+	void setNumberOfLeftLasers(int numberOfLasers);
+	int getNumberOfLeftLasers();
+
+
+	//methods
+	void laserPreparationBeforeShoot(float time);
 };
 

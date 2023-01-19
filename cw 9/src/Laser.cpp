@@ -5,6 +5,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include "Render_Utils.h"
 
 
 Laser::Laser() {
@@ -12,9 +13,9 @@ Laser::Laser() {
 }
 
 Laser::Laser(glm::vec3 dirOfLaser, glm::vec3 posOfLaser, float speedOfLaser) {
-	laserDir = dirOfLaser;
-	laserPos = posOfLaser;
-	laserSpeed = speedOfLaser;
+	this->laserDir = dirOfLaser;
+	this->laserPos = posOfLaser;
+	this->laserSpeed = speedOfLaser;
 }
 
 void Laser::setLaserDir(glm::vec3 dirOfLaser) {
@@ -47,4 +48,12 @@ void Laser::setTimeSinceShootLaser(float tSinceShootLaser) {
 
 float Laser::getTimeSinceShootLaser() {
 	return timeSinceShootLaser;
+}
+
+void Laser::setLaserContext(Core::RenderContext lasContext) {
+	this->laserContext = lasContext;
+}
+
+Core::RenderContext Laser::getLaserContext() {
+	return this->laserContext;
 }
