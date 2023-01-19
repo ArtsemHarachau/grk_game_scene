@@ -349,6 +349,8 @@ void renderScene(GLFWwindow* window)
 				/*if (i == 1) {
 					spaceShip.setAttackDecision(false);
 				}*/
+
+				//hello
 			}
 		}
 
